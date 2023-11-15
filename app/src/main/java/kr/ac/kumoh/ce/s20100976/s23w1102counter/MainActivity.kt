@@ -17,8 +17,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,10 +28,13 @@ import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelProvider
 import kr.ac.kumoh.ce.s20100976.s23w1102counter.ui.theme.S23W1102CounterTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        val vm = ViewModelProvider(this)[CountViewModel::class.java]
+
         super.onCreate(savedInstanceState)
         setContent {
             //MyApp(content = { Greeting("test") })
@@ -41,8 +46,8 @@ class MainActivity : ComponentActivity() {
                     verticalArrangement = Arrangement.Center,
                 ) {
                    // Clicker()
-                    Counter()
-                    Counter()
+                    Counter(vm)
+                    Counter(vm)
                 }
             }
         }
@@ -87,9 +92,10 @@ fun Clicker() {
 }
 
 @Composable
-fun Counter() {
+fun Counter(viewModel: CountViewModel) {
     //var count = 0;
-    val (count, setCount) = remember { mutableStateOf(0) }
+    // val (count, setCount) = rememberSaveable { mutableStateOf(0) }
+    val count by viewModel.count.observeAsState(0)
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -101,12 +107,12 @@ fun Counter() {
         Row {
             Button(modifier = Modifier
                 .weight(1f),
-                onClick = { setCount( count + 1) }) {
+                onClick = { viewModel.onAdd() }) {
                 Text(text = "증가")
             }
             Spacer(modifier = Modifier.width(8.dp))
             Button(modifier = Modifier.weight(1f),
-                onClick = { if (count > 0) setCount( count - 1) }) {
+                onClick = { viewModel.onSub() }) {
                 Text(text = "감소")
             }
         }
